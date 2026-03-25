@@ -151,6 +151,93 @@ MCP Response:
 
 ---
 
+## 🔗 HTTP API (For Direct Integration)
+
+In addition to MCP protocol, the server provides HTTP REST endpoints for direct access:
+
+### POST `/api/recommend-services`
+
+Get recommended AI operations services.
+
+**Request:**
+```json
+{
+  "industry": "healthcare",
+  "company_size": 50,
+  "pain_points": ["email_overload", "manual_data_entry"]
+}
+```
+
+**Response:**
+```json
+{
+  "recommended_packages": [
+    {
+      "id": "automated_workflows",
+      "name": "Automated Workflows",
+      "description": "5-7 automated workflows...",
+      "target_revenue": "$25K-$75K",
+      "fits_reason": "Automated Workflows includes email triage..."
+    }
+  ]
+}
+```
+
+### POST `/api/assess-readiness`
+
+Assess AI readiness with scoring and gap analysis.
+
+**Request:**
+```json
+{
+  "industry": "healthcare",
+  "employee_count": 50,
+  "current_tools": ["salesforce", "gmail", "slack"],
+  "pain_points": ["email_overload"]
+}
+```
+
+**Response:**
+```json
+{
+  "readiness_score": 40,
+  "recommended_package": "custom_ai_second_brain",
+  "gap_analysis": [...],
+  "implementation_roadmap": "...",
+  "pricing_estimate": "$150K-$180K"
+}
+```
+
+### POST `/api/book-consultation`
+
+Book a consultation meeting.
+
+**Request:**
+```json
+{
+  "service_package": "automated_workflows",
+  "contact_name": "Dr. Sarah Johnson",
+  "contact_email": "sarah@healthtech.com",
+  "company_name": "Health Tech Solutions",
+  "preferred_times": ["2026-03-26 10am"],
+  "industry": "healthcare",
+  "employee_count": 50
+}
+```
+
+**Response:**
+```json
+{
+  "booking_id": "BOOK-1774401284456",
+  "confirmed_time": "2026-03-26 10am",
+  "meeting_link": "https://agencyai.me/consultation/BOOK-1774401284456",
+  "pre_call_questionnaire": "https://agencyai.me/questionnaire/BOOK-1774401284456",
+  "next_steps": [...]
+}
+```
+
+---
+
 ## 🔧 Architecture
 
 ```
