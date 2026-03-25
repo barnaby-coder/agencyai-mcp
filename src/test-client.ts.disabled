@@ -1,0 +1,83 @@
+import { Client } from "@modelcontextprotocol/sdk/client/index.js";
+import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio";
+import * as z from "zod";
+
+async function main() {
+  console.error("Connecting to Agency AI MCP server...");
+
+  const transport = new StdioClientTransport({
+    command: "npm",
+    args: ["run", "dev"],
+    cwd: process.cwd()
+  });
+
+  const client = new Client({
+    name: "test-client",
+    version: "1.0.0"
+  }, {
+    capabilities: {}
+  });
+
+  try {
+    await client.connect(transport);
+    console.error("✅ Connected to server");
+
+    // List available tools
+    const tools = await client.listTools();
+    console.error("\n📦 Available tools:");
+    for (const tool of tools.tools) {
+      console.error(`  - ${tool.name}: ${tool.description || "No description"}`);
+    }
+
+    // Test 1: Get service offerings
+    console.error("\n🧪 Test 1: get_service_offerings");
+    const servicesResult = await client.callTool({
+      name: "get_service_offerings",
+      arguments: {
+        industry: "healthcare",
+        company_size: 50,
+        pain_points: ["manual_data_entry", "email_overload"]
+      }
+    });
+    console.error(JSON.stringify(servicesResult, null, 2));
+
+    // Test 2: Assess AI readiness
+    console.error("\n🧪 Test 2: assess_ai_readiness");
+    const readinessResult = await client.callTool({
+      name: "assess_ai_readiness",
+      arguments: {
+        industry: "healthcare",
+        employee_count: 50,
+        current_tools: ["salesforce", "gmail", "slack"],
+        pain_points: ["no_decision_tracking", "manual_data_entry"]
+      }
+    });
+    console.error(JSON.stringify(readinessResult, null, 2));
+
+    // Test 3: Book consultation
+    console.error("\n🧪 Test 3: book_consultation");
+    const bookingResult = await client.callTool({
+      name: "book_consultation",
+      arguments: {
+        service_package: "automated_workflows",
+        contact_name: "Test User",
+        contact_email: "test@example.com",
+        company_name: "Test Health Clinic",
+        preferred_times: ["2026-03-25 2pm"],
+        industry: "healthcare",
+        employee_count: 50
+      }
+    });
+    console.error(JSON.stringify(bookingResult, null, 2));
+
+    console.error("\n✅ All tests completed successfully");
+
+  } catch (error) {
+    console.error("❌ Error:", error);
+    process.exit(1);
+  } finally {
+    await client.close();
+  }
+}
+
+main().catch(console.error);

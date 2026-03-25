@@ -1,0 +1,39 @@
+{
+  "services": [
+    {
+      "id": "automated_workflows",
+      "name": "Automated Workflows",
+      "description": "5-7 automated workflows using existing tools (meeting notes → knowledge base, email triage, decision logging, calendar optimization)",
+      "target_revenue": "$25K-$75K",
+      "delivery_time": "4-6 weeks",
+      "target_company_size": "5-100 employees",
+      "includes": [
+        "meeting_notes_to_knowledge_base",
+        "email_triage_and_priority_routing",
+        "decision_logging",
+        "calendar_optimization_with_ai_prep",
+        "document_automation"
+      ],
+      "industries": ["healthcare", "finance", "professional_services", "real_estate", "insurance_brokerages", "construction_trades"]
+    },
+    {
+      "id": "custom_ai_second_brain",
+      "name": "Custom AI Second Brain",
+      "description": "Self-hosted AI system with 8-10 custom intelligence tools. Creates persistent knowledge layer that learns from interactions, integrates with CRM, accounting, email, and calendar. 24/7 AI assistant via mobile.",
+      "target_revenue": "$150K-$250K",
+      "delivery_time": "8-12 weeks",
+      "target_company_size": "20-200 employees",
+      "includes": [
+        "persistent_knowledge_layer",
+        "crm_integration",
+        "accounting_integration",
+        "email_integration",
+        "calendar_integration",
+        "24x7_mobile_assistant",
+        "8-10_custom_intelligence_tools",
+        "governance_controls"
+      ],
+      "industries": ["healthcare", "finance", "professional_services", "real_estate", "insurance_brokerages"]
+    }
+  ]
+}
