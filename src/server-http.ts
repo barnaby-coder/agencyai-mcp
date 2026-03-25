@@ -92,13 +92,14 @@ server.registerTool(
 
 async function main() {
   const PORT = process.env.PORT || 3000;
+  const HOST = process.env.HOST || '0.0.0.0';
 
   const app = express();
   app.use(cors());
 
   // SSE endpoint for MCP
   app.get('/sse', async (req, res) => {
-    console.error('New SSE connection');
+    console.log('New SSE connection');
     const transport = new SSEServerTransport('/message', res);
     await server.connect(transport);
   });
@@ -108,11 +109,27 @@ async function main() {
     res.json({ status: 'ok', name: 'agencyai-mcp', version: '1.0.0' });
   });
 
-  app.listen(PORT, () => {
-    console.error(`Agency AI MCP HTTP server running on port ${PORT}`);
-    console.error(`SSE endpoint: http://localhost:${PORT}/sse`);
-    console.error(`Health check: http://localhost:${PORT}/health`);
+  // Root endpoint for testing
+  app.get('/', (req, res) => {
+    res.json({
+      status: 'ok',
+      name: 'agencyai-mcp',
+      version: '1.0.0',
+      endpoints: {
+        sse: '/sse',
+        health: '/health'
+      }
+    });
+  });
+
+  app.listen(PORT, HOST, () => {
+    console.log(`Agency AI MCP HTTP server running on ${HOST}:${PORT}`);
+    console.log(`SSE endpoint: http://${HOST}:${PORT}/sse`);
+    console.log(`Health check: http://${HOST}:${PORT}/health`);
   });
 }
 
-main().catch(console.error);
+main().catch((error) => {
+  console.error('Failed to start server:', error);
+  process.exit(1);
+});
