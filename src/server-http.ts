@@ -1,8 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
+import { createMcpExpressApp } from "@modelcontextprotocol/sdk/server/express.js";
 import * as z from "zod";
-import express from "express";
-import cors from "cors";
 import { readFileSync } from "fs";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
@@ -104,24 +103,58 @@ async function main() {
   const PORT = process.env.PORT || 3000;
   const HOST = process.env.HOST || '0.0.0.0';
 
-  const app = express();
-  app.use(cors());
+  const app = createMcpExpressApp();
 
-  // SSE endpoint for MCP
+  // Store transports by session ID
+  const transports: Record<string, SSEServerTransport> = {};
+
+  // SSE endpoint for establishing stream
   app.get('/sse', async (req, res) => {
+    console.log('New SSE connection');
     try {
-      console.log('New SSE connection');
-      // Set SSE headers before transport
-      res.setHeader('Content-Type', 'text/event-stream');
-      res.setHeader('Cache-Control', 'no-cache');
-      res.setHeader('Connection', 'keep-alive');
-
       const transport = new SSEServerTransport('/message', res);
+      const sessionId = transport.sessionId;
+      transports[sessionId] = transport;
+
+      transport.onclose = () => {
+        console.log(`SSE transport closed for session ${sessionId}`);
+        delete transports[sessionId];
+      };
+
       await server.connect(transport);
+      console.log(`Established SSE stream with session ID: ${sessionId}`);
     } catch (error) {
       console.error('SSE connection error:', error);
       if (!res.headersSent) {
         res.status(500).json({ error: 'SSE connection failed' });
+      }
+    }
+  });
+
+  // Messages endpoint for receiving client JSON-RPC requests
+  app.post('/message', async (req, res) => {
+    console.log('POST /message received');
+    const sessionId = req.query.sessionId as string;
+
+    if (!sessionId) {
+      console.error('No session ID provided');
+      res.status(400).send('Missing sessionId parameter');
+      return;
+    }
+
+    const transport = transports[sessionId];
+    if (!transport) {
+      console.error(`No active transport found for session ID: ${sessionId}`);
+      res.status(404).send('Session not found');
+      return;
+    }
+
+    try {
+      await transport.handlePostMessage(req, res, req.body);
+    } catch (error) {
+      console.error('Error handling POST request:', error);
+      if (!res.headersSent) {
+        res.status(500).send('Error handling request');
       }
     }
   });
@@ -153,16 +186,6 @@ async function main() {
     process.exit(1);
   });
 }
-
-// Handle uncaught exceptions
-process.on('uncaughtException', (err) => {
-  console.error('Uncaught Exception:', err);
-  process.exit(1);
-});
-
-process.on('unhandledRejection', (reason, promise) => {
-  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
-});
 
 main().catch((error) => {
   console.error('Failed to start server:', error);
