@@ -4,12 +4,18 @@ import * as z from "zod";
 import express from "express";
 import cors from "cors";
 import { readFileSync } from "fs";
+import { fileURLToPath } from "url";
+import { dirname, join } from "path";
 import { handleGetServices } from "./tools/get-services.js";
 import { handleAssessReadiness } from "./tools/assess-readiness.js";
 import { handleBookConsultation } from "./tools/book-consultation.js";
 
+// Get directory path
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
 // Load services data
-const servicesPath = new URL('../data/services.json', import.meta.url).pathname;
+const servicesPath = join(__dirname, '../data/services.json');
 const services = JSON.parse(readFileSync(servicesPath, 'utf-8'));
 
 const server = new McpServer({
