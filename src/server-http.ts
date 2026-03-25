@@ -103,7 +103,10 @@ async function main() {
   const PORT = process.env.PORT || 3000;
   const HOST = process.env.HOST || '0.0.0.0';
 
-  const app = createMcpExpressApp();
+  const app = createMcpExpressApp({
+    host: '0.0.0.0',
+    allowedHosts: ['0.0.0.0', 'localhost', '127.0.0.1', 'agencyai-mcp.up.railway.app']
+  });
 
   // Store transports by session ID
   const transports: Record<string, SSEServerTransport> = {};
