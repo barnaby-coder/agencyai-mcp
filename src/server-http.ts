@@ -175,9 +175,77 @@ async function main() {
       version: '1.0.0',
       endpoints: {
         sse: '/sse',
-        health: '/health'
+        health: '/health',
+        api_services: '/api/recommend-services',
+        api_readiness: '/api/assess-readiness'
       }
     });
+  });
+
+  // HTTP API endpoint for service recommendations (for widget)
+  app.post('/api/recommend-services', async (req, res) => {
+    console.log('POST /api/recommend-services received');
+    try {
+      const { industry, company_size, pain_points } = req.body;
+
+      // Call same logic as MCP tool
+      const result = await handleGetServices({
+        industry,
+        company_size,
+        pain_points: pain_points || [],
+        services
+      });
+
+      res.json(result);
+    } catch (error) {
+      console.error('Error in recommend-services:', error);
+      res.status(500).json({ error: 'Failed to get recommendations' });
+    }
+  });
+
+  // HTTP API endpoint for readiness assessment (for widget)
+  app.post('/api/assess-readiness', async (req, res) => {
+    console.log('POST /api/assess-readiness received');
+    try {
+      const { industry, employee_count, current_tools, pain_points } = req.body;
+
+      // Call same logic as MCP tool
+      const result = await handleAssessReadiness({
+        industry,
+        employee_count,
+        current_tools: current_tools || [],
+        pain_points: pain_points || []
+      });
+
+      res.json(result);
+    } catch (error) {
+      console.error('Error in assess-readiness:', error);
+      res.status(500).json({ error: 'Failed to assess readiness' });
+    }
+  });
+
+  // HTTP API endpoint for booking consultation (for widget)
+  app.post('/api/book-consultation', async (req, res) => {
+    console.log('POST /api/book-consultation received');
+    try {
+      const { service_package, contact_name, contact_email, company_name, preferred_times, industry, employee_count } = req.body;
+
+      // Call same logic as MCP tool
+      const result = await handleBookConsultation({
+        service_package,
+        contact_name,
+        contact_email,
+        company_name,
+        preferred_times: preferred_times || [],
+        industry,
+        employee_count
+      });
+
+      res.json(result);
+    } catch (error) {
+      console.error('Error in book-consultation:', error);
+      res.status(500).json({ error: 'Failed to book consultation' });
+    }
   });
 
   app.listen(PORT, HOST, () => {
