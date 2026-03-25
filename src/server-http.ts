@@ -3,10 +3,14 @@ import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
 import * as z from "zod";
 import express from "express";
 import cors from "cors";
+import { readFileSync } from "fs";
 import { handleGetServices } from "./tools/get-services.js";
 import { handleAssessReadiness } from "./tools/assess-readiness.js";
 import { handleBookConsultation } from "./tools/book-consultation.js";
-import services from "../data/services.json";
+
+// Load services data
+const servicesPath = new URL('../data/services.json', import.meta.url).pathname;
+const services = JSON.parse(readFileSync(servicesPath, 'utf-8'));
 
 const server = new McpServer({
   name: "agencyai-commerce",
@@ -99,9 +103,21 @@ async function main() {
 
   // SSE endpoint for MCP
   app.get('/sse', async (req, res) => {
-    console.log('New SSE connection');
-    const transport = new SSEServerTransport('/message', res);
-    await server.connect(transport);
+    try {
+      console.log('New SSE connection');
+      // Set SSE headers before transport
+      res.setHeader('Content-Type', 'text/event-stream');
+      res.setHeader('Cache-Control', 'no-cache');
+      res.setHeader('Connection', 'keep-alive');
+
+      const transport = new SSEServerTransport('/message', res);
+      await server.connect(transport);
+    } catch (error) {
+      console.error('SSE connection error:', error);
+      if (!res.headersSent) {
+        res.status(500).json({ error: 'SSE connection failed' });
+      }
+    }
   });
 
   // Health check endpoint
@@ -126,8 +142,21 @@ async function main() {
     console.log(`Agency AI MCP HTTP server running on ${HOST}:${PORT}`);
     console.log(`SSE endpoint: http://${HOST}:${PORT}/sse`);
     console.log(`Health check: http://${HOST}:${PORT}/health`);
+  }).on('error', (err) => {
+    console.error('Server listen error:', err);
+    process.exit(1);
   });
 }
+
+// Handle uncaught exceptions
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err);
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
 
 main().catch((error) => {
   console.error('Failed to start server:', error);
