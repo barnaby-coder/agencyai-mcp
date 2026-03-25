@@ -1,7 +1,5 @@
-import services from "../../data/services.json";
-
 export function handleGetServices(args: any) {
-  const { industry, company_size, pain_points } = args;
+  const { industry, company_size, pain_points, services } = args;
   let recommended_services = services.services;
   
   // Filter by industry if specified
